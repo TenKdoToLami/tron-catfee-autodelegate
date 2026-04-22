@@ -1,0 +1,25 @@
+{
+  "name": "tron-catfee-autodelegate",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TenKdoToLami/tron-catfee-autodelegate.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/TenKdoToLami/tron-catfee-autodelegate/issues"
+  },
+  "homepage": "https://github.com/TenKdoToLami/tron-catfee-autodelegate#readme",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "tronweb": "^6.3.0"
+  }
+}
