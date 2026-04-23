@@ -1,71 +1,71 @@
-# TRON Auto-Delegate Bot
+# TRON Catfee Auto-Delegate
 
-A Node.js automation script for TRON wallets that alternates daily between claiming rewards and staking/delegating energy.
+A professional, modular Node.js automation for TRON staking, voting, and delegation. This script alternates daily between claiming rewards and reinvesting them (staking/voting/delegating) to maximize your yield on [Catfee.io](https://catfee.io).
 
-## 🚀 Features
-- **Alternating Actions**: Automatically switches between claiming rewards (Day 1) and staking/voting/delegating (Day 2).
-- **Stake V2 Compatible**: Uses the latest TRON staking protocol.
-- **Customizable**: Set your own SR address, target wallet, and TRX fee reserve.
-- **Lightweight**: Zero-dependency state management using a local JSON file.
+## 🚀 Getting Started
 
----
-
-## 🛠️ Setup
-
-### 1. Clone & Install
+### 1. Installation
+Ensure you have [Node.js](https://nodejs.org/) installed, then:
 ```bash
-git clone <your-repo-url>
-cd tron-catfee-autodelegate
 npm install
 ```
 
-### 2. Configure Environment
-Rename `.env.example` to `.env` and fill in your details:
+### 2. Configuration
+Copy `.env.example` to `.env` and fill in your details:
 ```bash
 PRIVATE_KEY=your_private_key_here
-TARGET_WALLET=address_to_receive_energy
-VOTE_SR_ADDRESS=TTcYhypP8m4phDhN6oRexz2174zAerjEWP
-TRX_FEE_RESERVE=20
+VOTE_SR_ADDRESS=TTcYhypP8m4phDhN6oRexz2174zAerjEWP  # Default: Cryptoguyinza
+TRX_FEE_RESERVE=0                                  # TRX to keep for gas (e.g. 20)
+FULL_HOST=https://api.trongrid.io
 ```
 
 ---
 
-## 🐧 Linux Server Deployment (Crontab)
+## 🛠️ Usage
 
-To run the script automatically every day at **midnight**, you can use the provided setup script or manually configure crontab.
-
-### 1. Using the automated script (Recommended)
-Give the script execution permissions and run it:
+### 🔄 Automatic Routine (The Orchestrator)
+The main script handles the entire cycle. It checks `state.json` to decide whether to Claim or Stake/Vote/Delegate.
 ```bash
-chmod +x setup-cron.sh
-./setup-cron.sh install
-```
-To stop the bot later:
-```bash
-./setup-cron.sh uninstall
+npm start
 ```
 
-### 2. Manual Configuration
-1. Open your crontab editor:
-   ```bash
-   crontab -e
-   ```
-2. Add the following line at the end:
-   ```bash
-   0 0 * * * /usr/bin/node /home/user/tron-catfee-autodelegate/index.js >> /home/user/tron-catfee-autodelegate/cron.log 2>&1
-   ```
+### 🧪 Modular Actions (Run One-by-One)
+If you want to perform a specific action manually without affecting the automation state, use these commands:
 
-### Does crontab activate at midnight?
-Yes! The expression `0 0 * * *` specifically tells the server to run the command at exactly **00:00 (Midnight)** every single day.
+| Action | Command | Description |
+| :--- | :--- | :--- |
+| **Claim** | `npm run claim` | Withdraws all pending staking rewards to your balance. |
+| **Stake** | `npm run stake` | Stakes available TRX for Energy (respecting your reserve). |
+| **Vote** | `npm run vote` | Casts **all** your voting power for your chosen SR. |
+| **Delegate** | `npm run delegate` | Finds the best Catfee.io project and delegates energy. |
 
 ---
 
 ## ⚙️ How it works
-The script maintains a `state.json` file to track its last action.
-- **Run 1**: Claims all pending voting rewards.
-- **Run 2**: Stakes available TRX (minus reserve), votes for your chosen SR, and delegates all available energy power.
-- **Repeat**: The cycle continues automatically.
+
+### The State Cycle
+The script maintains a `state.json` file to track its last action and ensure a clean rotation:
+- **Day A**: Claims all pending voting rewards.
+- **Day B**: Stakes, Votes for your SR, and Delegates all energy power.
+- **Day C**: Repeat Day A.
+
+### Recent Architectural Improvements
+- **Modular Design**: Logic is separated into `lib/` (core) and `scripts/` (manual tests).
+- **Professional Logging**: Every action is timestamped in ISO format for easy log review.
+- **Power Precision**: The script now fetches your real-time "Total Tron Power" directly from the network, ensuring every single TRX is used in your vote.
+- **Fail-Safe Validation**: The script validates your environment on startup and halts if critical keys are missing.
+
+---
+
+## 🗓️ Scheduling (Cron)
+To run this automatically at midnight every day on a Linux server:
+
+1. Open crontab: `crontab -e`
+2. Add this line:
+   ```bash
+   0 0 * * * /usr/bin/node /path/to/your/folder/index.js >> /path/to/your/folder/cron.log 2>&1
+   ```
 
 ## ⚠️ Security
 - **Never** commit your `.env` file to version control.
-- Ensure your server has restricted access, as it contains your wallet's private key.
+- Ensure your server is secure, as `.env` contains your wallet's private key.

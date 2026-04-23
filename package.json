@@ -4,6 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
+    "claim": "node scripts/test-claim.js",
+    "stake": "node scripts/test-stake.js",
+    "vote": "node scripts/test-vote.js",
+    "delegate": "node scripts/test-delegate.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
