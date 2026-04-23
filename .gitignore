@@ -1,5 +1,7 @@
 node_modules/
 .env
 state.json
+history.json
+*.db
 scratch/
 package-lock.json

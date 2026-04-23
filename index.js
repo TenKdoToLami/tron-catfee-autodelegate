@@ -1,31 +1,44 @@
 const fs = require('fs').promises;
+const path = require('path');
 const { CONFIG, sleep, log } = require('./lib/config');
 const { getCatfeeTarget } = require('./lib/catfee');
 const { 
     claimRewards, 
     stakeEnergy, 
     voteSR, 
-    delegateEnergy 
+    delegateEnergy,
+    getAccountSnapshot 
 } = require('./lib/actions');
+const { recordSnapshot } = require('./lib/history');
+const { getStateValue, setStateValue } = require('./lib/db');
 
 /**
  * Handles the persistent state of the automation
  */
 async function getState() {
+    // Check if we need to migrate from state.json
     try {
-        const data = await fs.readFile(CONFIG.STATE_FILE, 'utf8');
-        return JSON.parse(data);
-    } catch (error) {
-        return { lastAction: 'STAKE_VOTE_DELEGATE' };
+        const oldStatePath = path.join(__dirname, 'state.json');
+        const stats = await fs.stat(oldStatePath);
+        if (stats.isFile()) {
+            const data = await fs.readFile(oldStatePath, 'utf8');
+            const oldState = JSON.parse(data);
+            log('Migrating state from state.json to database...');
+            setStateValue('lastAction', oldState.lastAction);
+            // Delete the old file
+            await fs.unlink(oldStatePath);
+        }
+    } catch (e) {
+        // No migration needed
     }
+
+    return {
+        lastAction: getStateValue('lastAction', 'STAKE_VOTE_DELEGATE')
+    };
 }
 
 async function saveState(state) {
-    try {
-        await fs.writeFile(CONFIG.STATE_FILE, JSON.stringify(state, null, 2));
-    } catch (error) {
-        log(`CRITICAL: Could not save state file: ${error.message}`);
-    }
+    setStateValue('lastAction', state.lastAction);
 }
 
 /**
@@ -81,6 +94,15 @@ async function main() {
     if (success) {
         await saveState(state);
         log(`Automation completed. Next expected action: ${state.lastAction === 'CLAIM_REWARDS' ? 'STAKE_VOTE_DELEGATE' : 'CLAIM_REWARDS'}`);
+        
+        // Record Daily History Snapshot
+        const snapshot = await getAccountSnapshot();
+        if (snapshot) {
+            await recordSnapshot({
+                action: state.lastAction, // This is the action just completed
+                ...snapshot
+            });
+        }
     } else {
         log('Automation cycle failed. Check logs above for details.');
         process.exit(1);

@@ -24,7 +24,7 @@ FULL_HOST=https://api.trongrid.io
 ## 🛠️ Usage
 
 ### 🔄 Automatic Routine (The Orchestrator)
-The main script handles the entire cycle. It checks `state.json` to decide whether to Claim or Stake/Vote/Delegate.
+The main script handles the entire cycle. It checks the SQL database (`data.db`) to decide whether to Claim or Stake/Vote/Delegate.
 ```bash
 npm start
 ```
@@ -38,18 +38,20 @@ If you want to perform a specific action manually without affecting the automati
 | **Stake** | `npm run stake` | Stakes available TRX for Energy (respecting your reserve). |
 | **Vote** | `npm run vote` | Casts **all** your voting power for your chosen SR. |
 | **Delegate** | `npm run delegate` | Finds the best Catfee.io project and delegates energy. |
+| **History** | `npm run history` | Records a manual balance snapshot to the SQL database. |
 
 ---
 
 ## ⚙️ How it works
 
 ### The State Cycle
-The script maintains a `state.json` file to track its last action and ensure a clean rotation:
+The script maintains its state in a local SQLite database (`data.db`) to track its last action and ensure a clean rotation:
 - **Day A**: Claims all pending voting rewards.
 - **Day B**: Stakes, Votes for your SR, and Delegates all energy power.
 - **Day C**: Repeat Day A.
 
 ### Recent Architectural Improvements
+- **SQL Persistence**: Replaced flat JSON files with a robust SQLite database for state management and history tracking.
 - **Modular Design**: Logic is separated into `lib/` (core) and `scripts/` (manual tests).
 - **Professional Logging**: Every action is timestamped in ISO format for easy log review.
 - **Power Precision**: The script now fetches your real-time "Total Tron Power" directly from the network, ensuring every single TRX is used in your vote.

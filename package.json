@@ -9,6 +9,7 @@
     "stake": "node scripts/test-stake.js",
     "vote": "node scripts/test-vote.js",
     "delegate": "node scripts/test-delegate.js",
+    "history": "node scripts/test-history.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -24,6 +25,7 @@
   },
   "homepage": "https://github.com/TenKdoToLami/tron-catfee-autodelegate#readme",
   "dependencies": {
+    "better-sqlite3": "^12.9.0",
     "dotenv": "^17.4.2",
     "tronweb": "^6.3.0"
   }
