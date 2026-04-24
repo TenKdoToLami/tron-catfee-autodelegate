@@ -75,38 +75,21 @@ async function runStakeRoutine() {
 
 async function main() {
     const state = await getState();
-    log(`Current State: Last action was ${state.lastAction}`);
+    const lastAction = state.lastAction;
+    
+    // Toggle state FIRST so that next run always alternates
+    state.lastAction = (lastAction === 'STAKE_VOTE_DELEGATE') ? 'CLAIM_REWARDS' : 'STAKE_VOTE_DELEGATE';
+    await saveState(state);
+    
+    log(`State advanced to ${state.lastAction}. Executing ${lastAction === 'STAKE_VOTE_DELEGATE' ? 'Claim' : 'Stake'} routine...`);
 
-    let success = false;
-    if (state.lastAction === 'STAKE_VOTE_DELEGATE') {
-        const res = await claimRewards();
-        if (res.success) {
-            state.lastAction = 'CLAIM_REWARDS';
-            success = true;
-        }
+    if (lastAction === 'STAKE_VOTE_DELEGATE') {
+        await claimRewards();
     } else {
-        success = await runStakeRoutine();
-        if (success) {
-            state.lastAction = 'STAKE_VOTE_DELEGATE';
-        }
+        await runStakeRoutine();
     }
-
-    if (success) {
-        await saveState(state);
-        log(`Automation completed. Next expected action: ${state.lastAction === 'CLAIM_REWARDS' ? 'STAKE_VOTE_DELEGATE' : 'CLAIM_REWARDS'}`);
-        
-        // Record Daily History Snapshot
-        const snapshot = await getAccountSnapshot();
-        if (snapshot) {
-            await recordSnapshot({
-                action: state.lastAction, // This is the action just completed
-                ...snapshot
-            });
-        }
-    } else {
-        log('Automation cycle failed. Check logs above for details.');
-        process.exit(1);
-    }
+    
+    log('Automation cycle finished.');
 }
 
 main().catch((err) => {
