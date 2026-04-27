@@ -51,22 +51,27 @@ The script maintains its state in a local SQLite database (`data.db`) to track i
 - **Day C**: Repeat Day A.
 
 ### Recent Architectural Improvements
-- **SQL Persistence**: Replaced flat JSON files with a robust SQLite database for state management and history tracking.
-- **Modular Design**: Logic is separated into `lib/` (core) and `scripts/` (manual tests).
-- **Professional Logging**: Every action is timestamped in ISO format for easy log review.
-- **Power Precision**: The script now fetches your real-time "Total Tron Power" directly from the network, ensuring every single TRX is used in your vote.
-- **Fail-Safe Validation**: The script validates your environment on startup and halts if critical keys are missing.
+- **Multi-Node Reliability**: Support for primary (TronGrid) and secondary (TronStack) nodes with automatic fallback if one is rate-limited.
+- **Gentle Execution**: Sequential API calls with 10-second delays between requests to avoid "Too Many Requests" (429) errors on public nodes.
+- **Network Sync Logic**: Added a 5-minute wait period between voting and delegation to ensure the blockchain fully reflects new staking power.
+- **SQL Persistence**: Uses SQLite (`data.db`) for robust state management and history tracking.
+- **Stake 2.0 Optimization**: Specifically designed for TRON Stake 2.0 with automatic detection of legacy Stake 1.0 balances.
 
 ---
 
 ## 🗓️ Scheduling (Cron)
 To run this automatically at midnight every day on a Linux server:
 
-1. Open crontab: `crontab -e`
-2. Add this line:
-   ```bash
-   0 0 * * * /usr/bin/node /path/to/your/folder/index.js >> /path/to/your/folder/cron.log 2>&1
-   ```
+1. Make the script executable: `chmod +x setup-cron.sh`
+2. Run the setup: `./setup-cron.sh`
+
+---
+
+## 🛡️ Best Practices
+- **API Key**: While the script handles rate limits, adding a `TRONGRID_API_KEY` to your `.env` is recommended for maximum reliability.
+- **Node Fallback**: The script defaults to `https://api.tronstack.io` as a secondary host if TronGrid is busy.
+
+---
 
 ## ⚠️ Security
 - **Never** commit your `.env` file to version control.
