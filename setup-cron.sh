@@ -5,7 +5,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 NODE_PATH=$(which node)
 SCRIPT_PATH="$SCRIPT_DIR/index.js"
 LOG_PATH="$SCRIPT_DIR/cron.log"
-CRON_JOB="0 0 * * * $NODE_PATH $SCRIPT_PATH >> $LOG_PATH 2>&1"
+CRON_JOB="0 0 * * * cd $SCRIPT_DIR && $NODE_PATH $SCRIPT_PATH >> $LOG_PATH 2>&1"
 
 install_cron() {
     # Check if node is installed
