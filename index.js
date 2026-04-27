@@ -58,8 +58,8 @@ async function runStakeRoutine() {
     const voteRes = await voteSR();
     if (!voteRes.success) return false;
 
-    log('Waiting 5s before delegation...');
-    await sleep(5000);
+    log('Waiting 5 minutes for network to reflect staking power before delegation...');
+    await sleep(300000); // 5 minutes
 
     // 3. Delegate to Catfee
     const target = await getCatfeeTarget();
