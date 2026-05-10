@@ -59,6 +59,17 @@ The script maintains its state in a local SQLite database (`data.db`) to track i
 
 ---
 
+## 📊 Data Logging & Tracking
+The bot automatically logs every action into the `history` table in `data.db`. Recorded data includes:
+- **Financials**: Staked TRX, Unstaked balance, and Total TRX value.
+- **Market Data**: Real-time TRX price in USDT (via Binance API).
+- **Audit Trail**: A JSON array of all **Transaction IDs** (TXIDs) generated during the run.
+- **Timestamps**: Exact date and time of each execution.
+
+To view your history manually, you can use any SQLite viewer or run the `npm run history` command for a quick snapshot.
+
+---
+
 ## 🗓️ Scheduling (Cron)
 To run this automatically at midnight every day on a Linux server:
 

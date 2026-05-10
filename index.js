@@ -11,29 +11,14 @@ const {
 } = require('./lib/actions');
 const { recordSnapshot } = require('./lib/history');
 const { getStateValue, setStateValue } = require('./lib/db');
+const { getTrxPrice } = require('./lib/price');
 
 /**
  * Handles the persistent state of the automation
  */
 async function getState() {
-    // Check if we need to migrate from state.json
-    try {
-        const oldStatePath = path.join(__dirname, 'state.json');
-        const stats = await fs.stat(oldStatePath);
-        if (stats.isFile()) {
-            const data = await fs.readFile(oldStatePath, 'utf8');
-            const oldState = JSON.parse(data);
-            log('Migrating state from state.json to database...');
-            setStateValue('lastAction', oldState.lastAction);
-            // Delete the old file
-            await fs.unlink(oldStatePath);
-        }
-    } catch (e) {
-        // No migration needed
-    }
-
     return {
-        lastAction: getStateValue('lastAction', 'STAKE_VOTE_DELEGATE')
+        lastAction: getStateValue('lastAction', 'CLAIM_REWARDS')
     };
 }
 
@@ -46,17 +31,20 @@ async function saveState(state) {
  */
 async function runStakeRoutine() {
     log('--- STARTING STAKE/VOTE/DELEGATE ROUTINE ---');
+    const results = { stake: null, vote: null, delegate: null };
     
     // 1. Stake new TRX
     const stakeRes = await stakeEnergy();
-    if (!stakeRes.success) return false;
+    results.stake = stakeRes;
+    if (!stakeRes.success) return results;
     
     log('Waiting 5s for network update...');
     await sleep(5000);
 
     // 2. Refresh Votes
     const voteRes = await voteSR();
-    if (!voteRes.success) return false;
+    results.vote = voteRes;
+    if (!voteRes.success) return results;
 
     log('Waiting 5 minutes for network to reflect staking power before delegation...');
     await sleep(300000); // 5 minutes
@@ -65,12 +53,12 @@ async function runStakeRoutine() {
     const target = await getCatfeeTarget();
     if (target) {
         const delegateRes = await delegateEnergy(target);
-        if (!delegateRes.success) return false;
+        results.delegate = delegateRes;
     } else {
         log('Skipping delegation: No Catfee target found.');
     }
     
-    return true;
+    return results;
 }
 
 async function main() {
@@ -83,10 +71,35 @@ async function main() {
     
     log(`State advanced to ${state.lastAction}. Executing ${lastAction === 'STAKE_VOTE_DELEGATE' ? 'Claim' : 'Stake'} routine...`);
 
+    let routineResult;
     if (lastAction === 'STAKE_VOTE_DELEGATE') {
-        await claimRewards();
+        routineResult = await claimRewards();
     } else {
-        await runStakeRoutine();
+        routineResult = await runStakeRoutine();
+    }
+    
+    // Collect TXIDs
+    const txids = [];
+    if (lastAction === 'STAKE_VOTE_DELEGATE') {
+        if (routineResult.txid) txids.push(routineResult.txid);
+    } else {
+        if (routineResult.stake?.txid) txids.push(routineResult.stake.txid);
+        if (routineResult.vote?.txid) txids.push(routineResult.vote.txid);
+        if (routineResult.delegate?.txid) txids.push(routineResult.delegate.txid);
+    }
+
+    // Record snapshot for history
+    log('Recording account snapshot...');
+    const snapshot = await getAccountSnapshot();
+    const trxPrice = await getTrxPrice();
+
+    if (snapshot) {
+        await recordSnapshot({
+            ...snapshot,
+            action: lastAction === 'STAKE_VOTE_DELEGATE' ? 'CLAIM' : 'STAKE',
+            trxPrice,
+            txids
+        });
     }
     
     log('Automation cycle finished.');
