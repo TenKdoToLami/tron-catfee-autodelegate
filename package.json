@@ -10,6 +10,7 @@
     "vote": "node scripts/test-vote.js",
     "delegate": "node scripts/test-delegate.js",
     "history": "node scripts/test-history.js",
+    "seed-history": "node scripts/seed-mock-history.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
