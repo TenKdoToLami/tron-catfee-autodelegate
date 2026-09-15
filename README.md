@@ -38,6 +38,7 @@ If you want to perform a specific action manually without affecting the automati
 | **Stake** | `npm run stake` | Stakes available TRX for Energy (respecting your reserve). |
 | **Vote** | `npm run vote` | Casts **all** your voting power for your chosen SR. |
 | **Delegate** | `npm run delegate` | Finds the best Catfee.io project and delegates energy. |
+| **Vaults** | `npm run vaults` | Tests Catfee.io vault availability using Puppeteer stealth to bypass Cloudflare. |
 | **History** | `npm run history` | Records a manual balance snapshot to the SQL database. |
 
 ---
@@ -56,6 +57,13 @@ The script maintains its state in a local SQLite database (`data.db`) to track i
 - **Network Sync Logic**: Added a 5-minute wait period between voting and delegation to ensure the blockchain fully reflects new staking power.
 - **SQL Persistence**: Uses SQLite (`data.db`) for robust state management and history tracking.
 - **Stake 2.0 Optimization**: Specifically designed for TRON Stake 2.0 with automatic detection of legacy Stake 1.0 balances.
+- **Cloudflare Bypass (Puppeteer Stealth)**: Automatically navigates Cloudflare Turnstile/Managed Challenges via Puppeteer Stealth if Catfee's public API returns HTTP 403. If no active vault is found, delegation is cleanly skipped and energy is left untouched.
+
+### 🐧 Linux VPS Dependencies (for Headless Chrome)
+If running on an Ubuntu/Debian server, ensure required Chromium system libraries are installed:
+```bash
+sudo apt-get update && sudo apt-get install -y ca-certificates fonts-liberation libasound2 libatk-bridge2.0-0 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgbm1 libgcc1 libglib2.0-0 libgtk-3-0 libnspr4 libnss3 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 lsb-release wget xdg-utils
+```
 
 ---
 
